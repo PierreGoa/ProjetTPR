@@ -1,0 +1,22 @@
+
+
+
+____________________________________________________________________
+Sunday the 4th of December 2022
+
+React configuration
+
+npx create-react-app tprprojectfront
+
+npm install flux --legacy-peer-deps react-router-dom@5.0.0 bootstrap@4.3.1
+
+npm install react-toastify@5.1.1
+
+npm start
+
+
+____________________________________________________________________
+Tuesday the 29th of November 2022
+
+Model : Definition of one model with his properties.
+Service : Actions on one ou more models.
