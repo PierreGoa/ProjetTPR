@@ -14,7 +14,7 @@ import cnam.projettpr.entity.ProduitStock;
 @Repository
 @Transactional
 public interface ProduitStockRepository  extends JpaRepository<ProduitStock, Integer> {
-    @Query("SELECT p FROM ProduitStock p WHERE p.status=0 OR p.status=2")
+    @Query("SELECT p FROM ProduitStock p WHERE p.status=0 OR p.status=2 ORDER BY p.dateOuverture DESC")
     public List<ProduitStock> findAll();
 }
 
