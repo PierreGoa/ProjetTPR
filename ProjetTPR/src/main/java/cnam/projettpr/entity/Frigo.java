@@ -1,6 +1,7 @@
 package cnam.projettpr.entity;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "frigo")
@@ -17,6 +18,9 @@ public class Frigo {
 
     @Column
     private Float tempMax;
+
+    @OneToMany(mappedBy = "frigo")
+    private Set<HistoFrigo> histosFrigo;
 
     public void setId(Integer id){
         this.idFrigo = id;
@@ -37,6 +41,10 @@ public class Frigo {
 
     public void setTempMax(Float temp){this.tempMax = temp;}
     public Float getTempMax(){return this.tempMax;}
+
+    public Set<HistoFrigo> getHistosFrigo(){
+        return histosFrigo;
+    }
 
     public Frigo(){}
 

@@ -1,12 +1,13 @@
 package cnam.projettpr.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import cnam.projettpr.dto.HistoFrigoDto;
 import cnam.projettpr.entity.*;
 import cnam.projettpr.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,6 +58,12 @@ public class TprController {
         try {
             frigoRepository.save(frigo);
 
+            HistoFrigo histoFrigo = new HistoFrigo();
+            histoFrigo.setDateHisto(new Date());
+            histoFrigo.setAction(0);
+            histoFrigo.setFrigo(frigo);
+            histoFrigoRepository.save(histoFrigo);
+
             redirectAttributes.addFlashAttribute("message", "Le frigo a été enregistré avec succès !");
         } catch (Exception e) {
             redirectAttributes.addAttribute("message", e.getMessage());
@@ -88,6 +95,50 @@ public class TprController {
             redirectAttributes.addFlashAttribute("message", "Le frigo avec l'id=" + id + " a été supprimé avec succès !");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/frigos";
+    }
+
+    @GetMapping("/tempfrigos/{id}")
+    public String editTempFrigo(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Frigo frigo = frigoRepository.findById(id).get();
+            //Création d'un nouvel historique...
+            HistoFrigo histoFrigo = new HistoFrigo();
+            histoFrigo.setDateHisto(new Date());
+            histoFrigo.setFrigo(frigo);
+            histoFrigo.setAction(1);
+            frigo.getHistosFrigo().add(histoFrigo);
+
+            HistoFrigoDto histoFrigoDto = new HistoFrigoDto(histoFrigo);
+
+            model.addAttribute("histofrigodto", histoFrigoDto);
+            model.addAttribute("pageTitle", "Mettre à jour la température du frigo (ID: " + histoFrigo.getIdHistoFrigo() + ")");
+
+            return "tempfrigo_form";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+
+            return "redirect:/frigos";
+        }
+    }
+
+    @PostMapping("/temphistofrigos/save")
+    public String saveTempHistoFrigo(HistoFrigoDto histofrigoDto, RedirectAttributes redirectAttributes) {
+        try {
+            HistoFrigo histoFrigo = new HistoFrigo();
+            histoFrigo.setActionStr(histofrigoDto.getActionStr());
+            histoFrigo.setDateHisto(new Date());
+            histoFrigo.setFrigo(frigoRepository.findById(histofrigoDto.getIdFrigo()).get());
+            histoFrigo.setAction(1);
+            histoFrigo.setTempMatin(histofrigoDto.getTempMatin());
+            histoFrigo.setTempMidi(histofrigoDto.getTempMidi());
+            histoFrigoRepository.save(histoFrigo);
+
+            redirectAttributes.addFlashAttribute("message", "La température du frigo a été enregistrée avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", e.getMessage());
         }
 
         return "redirect:/frigos";

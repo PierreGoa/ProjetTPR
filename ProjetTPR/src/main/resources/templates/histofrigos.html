@@ -44,9 +44,6 @@
         <div class="col-md-6 mt-2">
           <button id="btnClear" class="btn btn-info">Vider</button>
         </div>
-        <div class="col-md-6 mt-2">
-          <a href="/histofrigos/new" class="btn btn-primary active" role="button" data-bs-toggle="button" aria-pressed="true">Ajouter un historique frigo</a>
-        </div>
       </div>
     </form>
   </div>
@@ -57,22 +54,21 @@
       <thead class="thead-light">
       <tr>
         <th scope="col">Id</th>
+        <th scope="col">Date</th>
         <th scope="col">Nom</th>
         <th scope="col">Temp matin</th>
         <th scope="col">Temp midi</th>
-        <th>Modif./Suppr.</th>
+        <th></th>
       </tr>
       </thead>
       <tbody>
       <tr th:each="histofrigo : ${histofrigos}">
         <th scope="row">[[${histofrigo.idHistoFrigo}]]</th>
+        <td>[[${#dates.format(histofrigo.dateHisto, 'dd-MM-yyyy HH:mm')}]]</td>
         <td>[[${histofrigo.nomFrigo}]]</td>
         <td>[[${histofrigo.tempMatin}]]</td>
         <td>[[${histofrigo.tempMidi}]]</td>
         <td>
-          <a th:href="@{'/histofrigos/' + ${histofrigo.idHistoFrigo}}" title="Modifier cet historique frigo"
-             class="fa-regular fa-pen-to-square icon-dark"></a>
-          &nbsp;
           <a th:href="@{'/histofrigos/delete/' + ${histofrigo.idHistoFrigo}}" th:frigoNom="${histofrigo.nomFrigo}" id="btnDelete"
              title="Supprimer ce frigo" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
         </td>

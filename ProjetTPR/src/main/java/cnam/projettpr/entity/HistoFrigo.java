@@ -1,11 +1,13 @@
 package cnam.projettpr.entity;
 
+import org.hibernate.annotations.Cascade;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "histofrigo")
+@NamedQuery(name="HistoFrigo.findByIdFrigo", query="select h from HistoFrigo h where h.frigo.idFrigo = :id and h.dateHisto = :datehisto")
 public class HistoFrigo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,6 +21,7 @@ public class HistoFrigo {
     private int action = 0;
 
     @ManyToOne
+    @JoinColumn(name="idFrigo")
     private Frigo frigo;
 
     @Transient
@@ -31,7 +34,7 @@ public class HistoFrigo {
     @Transient
     private String actionStr;
 
-    public void setIdFrigo(Integer id){
+    public void setIdHistoFrigo(Integer id){
         this.idHistoFrigo = id;
     }
     public Integer getIdHistoFrigo(){
@@ -46,6 +49,21 @@ public class HistoFrigo {
 
     public void setFrigo(Frigo frigo){this.frigo = frigo;}
     public Frigo getFrigo(){return this.frigo;}
+
+    public Float getTempMatin(){
+        return this.tempMatin;
+    }
+    public void setTempMatin(Float tempMatin){
+        this.tempMatin = tempMatin;
+    }
+
+    public Float getTempMidi(){
+        return this.tempMidi;
+    }
+    public void setTempMidi(Float tempMidi){
+        this.tempMidi = tempMidi;
+    }
+
 
     @Transient
     public String getActionStr(){
@@ -83,17 +101,9 @@ public class HistoFrigo {
         return "";
     }
 
-    @Transient
-    public Float getTempMatin(){
-        return this.tempMatin;
+    public HistoFrigo(){
+        nomFrigo = getNomFrigo();
     }
-
-    @Transient
-    public Float getTempMidi(){
-        return this.tempMidi;
-    }
-
-    public HistoFrigo(){}
 
     @Override
     public String toString() {

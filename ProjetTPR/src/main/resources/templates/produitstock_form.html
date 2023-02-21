@@ -36,8 +36,8 @@
         <div class="form-group row">
           <label class="col-sm-5 col-form-label" for="produitRef">Produit de référence</label>
           <div class="col-sm-7">
-            <select class="form-control" th:field="*{produitRef}" th:required="true" style="width:500px">
-              <option value="">Choisir..</option>
+            <select class="form-control" th:field="*{produitRef}" th:required="true" style="width:500px" id="produitRef">
+              <option value="">Choisir...</option>
               <option th:each="pdtRef: ${produitsref}" th:value="${pdtRef.id}" th:text="${pdtRef.nomProduitRef}" />
             </select>
           </div>
@@ -46,7 +46,7 @@
         <div class="form-group row">
           <label class="col-sm-5 col-form-label" for="statusStr">Statut</label>
           <div class="col-sm-7">
-            <select class="form-control" th:field="*{statusStr}" style="width:500px">
+            <select class="form-control" th:field="*{statusStr}" style="width:500px" id="statusStr">
               <option value="ENCOURS">EN COURS</option>
               <option value="CONSOMME">CONSOMME</option>
               <option value="ERREURSAISIE">ERREUR SAISIE</option>
