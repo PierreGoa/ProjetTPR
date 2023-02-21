@@ -26,10 +26,17 @@
 
       <div class="p-3">
         <div class="form-group row">
-          <label class="col-sm-3 col-form-label" for="title">Nom</label>
+
           <div class="col-sm-9">
+            <label class="col-sm-3 col-form-label" for="nom">Nom</label>
             <input type="text" th:field="*{nomFrigo}" required minlength="2" maxlength="128" class="form-control" id="nom" />
+          </div>
+          <div class="col-sm-9">
+            <label class="col-sm-3 col-form-label" for="tempMin">Température minimum</label>
             <input type="text" th:field="*{tempMin}" placeholder="XX.XX" class="form-control" id="tempMin"/>
+          </div>
+          <div class="col-sm-9">
+            <label class="col-sm-3 col-form-label" for="tempMax">Température maximum</label>
             <input type="text" th:field="*{tempMax}" placeholder="XX.XX" class="form-control" id="tempMax"/>
           </div>
         </div>

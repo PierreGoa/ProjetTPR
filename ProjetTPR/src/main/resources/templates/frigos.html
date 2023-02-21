@@ -72,7 +72,8 @@
         <td>
           <a th:href="@{'/frigos/' + ${frigo.id}}" title="Modifier ce frigo"
              class="fa-regular fa-pen-to-square icon-dark"></a>
-          &nbsp;
+          <a th:href="@{'/tempfrigos/' + ${frigo.id}}" title="Noter la température"
+              class="fa-solid fa-sliders"></a>
           <a th:href="@{'/frigos/delete/' + ${frigo.id}}" th:frigoNom="${frigo.nomFrigo}" id="btnDelete"
              title="Supprimer ce frigo" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
         </td>

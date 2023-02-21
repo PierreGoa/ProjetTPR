@@ -20,7 +20,7 @@
 <div th:replace="fragments/header :: header"></div>
 
 <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-  <h2 class="text-center">Tableau de bord</h2>
+  <h2 class="text-center">Utilisateurs</h2>
 
   <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center message"
        role="alert">
@@ -29,52 +29,62 @@
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
-
+  <!--  Formulaire de recherche -->
   <div class="my-3">
-    <form th:action="@{/produitsstock}">
+    <form th:action="@{/utilisateurs}">
       <div class="row d-flex">
         <div class="col-md-6 mt-2">
-          <a href="/produitsstock/new" class="btn btn-primary active" role="button" data-bs-toggle="button" aria-pressed="true">Ajouter un produit stock</a>
-          <a href="/frigos" class="btn btn-primary active" role="button" data-bs-toggle="button" aria-pressed="true">Frigos</a>
+          <div class="search">
+            <i class="fa fa-search"></i>
+            <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"
+                   placeholder="Entrer un nom">
+            <button type="submit" class="btn btn-secondary">Chercher</button>
+          </div>
+        </div>
+        <div class="col-md-6 mt-2">
+          <button id="btnClear" class="btn btn-info">Vider</button>
+        </div>
+        <div class="col-md-6 mt-2">
+          <a href="/utilisateurs/new" class="btn btn-primary active" role="button" data-bs-toggle="button" aria-pressed="true">Ajouter un utilisateur</a>
         </div>
       </div>
     </form>
   </div>
 
   <!-- variale inseree dans Modele depuis le controler -->
-  <div th:if="${produitsstock.size() > 0}">
+  <div th:if="${utilisateurs.size() > 0}">
     <table class="table table-hover table-responsive-xl">
       <thead class="thead-light">
       <tr>
-        <th scope="col">Id</th>
+        <th scope="col">Login</th>
+        <th scope="col">Prenom</th>
         <th scope="col">Nom</th>
-        <th scope="col">Date ouverture</th>
-        <th scope="col">Temps restant</th>
-        <th scope="col">Status</th>
+        <th scope="col">Password</th>
+        <th scope="col">Role</th>
         <th>Modif./Suppr.</th>
       </tr>
       </thead>
       <tbody>
-      <tr th:each="produitstock : ${produitsstock}">
-        <th scope="row">[[${produitstock.id}]]</th>
-        <td>[[${produitstock.produitRef.nomProduitRef}]]</td>
-        <td>[[${#dates.format(produitstock.dateOuverture, 'dd-MM-yyyy HH:mm')}]]</td>
-        <td>[[${produitstock.tempsRestant}]]</td>
-        <td>[[${produitstock.statusStr}]]</td>
+      <tr th:each="utilisateur : ${utilisateurs}">
+        <th scope="row">[[${utilisateur.login}]]</th>
+        <td>[[${utilisateur.prenom}]]</td>
+        <td>[[${utilisateur.nom}]]</td>
+        <td>[[${utilisateur.password}]]</td>
+        <td>[[${utilisateur.roleStr}]]</td>
         <td>
-          <a th:href="@{'/produitsstock/' + ${produitstock.id}}" title="Modifier ce produit stock"
+          <a th:href="@{'/utilisateurs/' + ${utilisateur.id}}" title="Modifier cet utilisateur"
              class="fa-regular fa-pen-to-square icon-dark"></a>
           &nbsp;
-          <a th:href="@{'/produitsstock/delete/' + ${produitstock.id}}" th:produitstockNom="${produitstock.produitRef.nomProduitRef}" id="btnDelete"
-             title="Supprimer ce produit stock" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
+          <a th:href="@{'/utilisateurs/delete/' + ${utilisateur.id}}" th:utilisateurNom="${utilisateur.nom}" id="btnDelete"
+             title="Supprimer cet utilisateur" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="" th:unless="${produitsstock.size() > 0}">
-    <span>Aucun produit stock trouvé !</span>
+  <div class="" th:unless="${utilisateurs.size() > 0}">
+    <span>Aucun utilisateur trouvé !</span>
   </div>
 </div>
 
@@ -108,16 +118,16 @@
       e.preventDefault();
       link = $(this);
 
-      produitstockNom = link.attr("produitStockNom");
+      utilisateurNom = link.attr("utilisateurNom");
       $("#yesBtn").attr("href", link.attr("href"));
-      $("#confirmText").html("Voulez-vous supprimer le produit stock \<strong\>" + produitstockNom + "\<\/strong\>?");
+      $("#confirmText").html("Voulez-vous supprimer l'utilisateur \<strong\>" + utilisateurNom + "\<\/strong\>?");
       $("#confirmModal").modal();
     });
 
     $("#btnClear").on("click", function (e) {
       e.preventDefault();
       $("#keyword").text("");
-      window.location = "[[@{/produitsstock}]]";
+      window.location = "[[@{/utilisateurs}]]";
     });
   });
 </script>

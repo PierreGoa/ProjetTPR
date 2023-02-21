@@ -1,5 +1,7 @@
 package cnam.projettpr.entity;
 
+import cnam.projettpr.repository.HistoFrigoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -125,10 +127,21 @@ public class ProduitStock {
     }
 
     @PrePersist
-    public void beforeCreate()
-    {
+    public void beforeCreate(){
         dateOuverture = new Date();
     }
+
+
+    /*
+    JPA
+    before persist is called for a new entity – @PrePersist
+    after persist is called for a new entity – @PostPersist
+    before an entity is removed – @PreRemove
+    after an entity has been deleted – @PostRemove
+    before the update operation – @PreUpdate
+    after an entity is updated – @PostUpdate
+    after an entity has been loaded – @PostLoad
+     */
 
     public ProduitStock(){
     }

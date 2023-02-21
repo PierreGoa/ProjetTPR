@@ -1,26 +1,17 @@
 package cnam.projettpr.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import cnam.projettpr.dto.HistoFrigoDto;
+import cnam.projettpr.entity.*;
+import cnam.projettpr.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import cnam.projettpr.entity.Frigo;
-import cnam.projettpr.repository.FrigoRepository;
-
-import cnam.projettpr.entity.Categorie;
-import cnam.projettpr.repository.CategorieRepository;
-
-import cnam.projettpr.entity.ProduitRef;
-import cnam.projettpr.repository.ProduitRefRepository;
-
-import cnam.projettpr.entity.ProduitStock;
-import cnam.projettpr.repository.ProduitStockRepository;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -67,6 +58,12 @@ public class TprController {
         try {
             frigoRepository.save(frigo);
 
+            HistoFrigo histoFrigo = new HistoFrigo();
+            histoFrigo.setDateHisto(new Date());
+            histoFrigo.setAction(0);
+            histoFrigo.setFrigo(frigo);
+            histoFrigoRepository.save(histoFrigo);
+
             redirectAttributes.addFlashAttribute("message", "Le frigo a été enregistré avec succès !");
         } catch (Exception e) {
             redirectAttributes.addAttribute("message", e.getMessage());
@@ -98,6 +95,50 @@ public class TprController {
             redirectAttributes.addFlashAttribute("message", "Le frigo avec l'id=" + id + " a été supprimé avec succès !");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/frigos";
+    }
+
+    @GetMapping("/tempfrigos/{id}")
+    public String editTempFrigo(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Frigo frigo = frigoRepository.findById(id).get();
+            //Création d'un nouvel historique...
+            HistoFrigo histoFrigo = new HistoFrigo();
+            histoFrigo.setDateHisto(new Date());
+            histoFrigo.setFrigo(frigo);
+            histoFrigo.setAction(1);
+            frigo.getHistosFrigo().add(histoFrigo);
+
+            HistoFrigoDto histoFrigoDto = new HistoFrigoDto(histoFrigo);
+
+            model.addAttribute("histofrigodto", histoFrigoDto);
+            model.addAttribute("pageTitle", "Mettre à jour la température du frigo (ID: " + histoFrigo.getIdHistoFrigo() + ")");
+
+            return "tempfrigo_form";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+
+            return "redirect:/frigos";
+        }
+    }
+
+    @PostMapping("/temphistofrigos/save")
+    public String saveTempHistoFrigo(HistoFrigoDto histofrigoDto, RedirectAttributes redirectAttributes) {
+        try {
+            HistoFrigo histoFrigo = new HistoFrigo();
+            histoFrigo.setActionStr(histofrigoDto.getActionStr());
+            histoFrigo.setDateHisto(new Date());
+            histoFrigo.setFrigo(frigoRepository.findById(histofrigoDto.getIdFrigo()).get());
+            histoFrigo.setAction(1);
+            histoFrigo.setTempMatin(histofrigoDto.getTempMatin());
+            histoFrigo.setTempMidi(histofrigoDto.getTempMidi());
+            histoFrigoRepository.save(histoFrigo);
+
+            redirectAttributes.addFlashAttribute("message", "La température du frigo a été enregistrée avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", e.getMessage());
         }
 
         return "redirect:/frigos";
@@ -331,6 +372,154 @@ public class TprController {
         }
 
         return "redirect:/produitsstock";
+    }
+
+    //Utilisateurs
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
+    @GetMapping("/utilisateurs")
+    public String getAllUtilisateurs(Model model, @Param("keyword") String keyword) {
+        try {
+            List<Utilisateur> utilisateurs = new ArrayList<Utilisateur>();
+
+            if (keyword == null) {
+                utilisateurRepository.findAll().forEach(utilisateurs::add);
+            } else {
+                utilisateurRepository.findByNomIgnoreCase(keyword).forEach(utilisateurs::add);
+                model.addAttribute("keyword", keyword);
+            }
+
+            model.addAttribute("utilisateurs", utilisateurs);
+        } catch (Exception e) {
+            model.addAttribute("message", e.getMessage());
+        }
+
+        return "utilisateurs";
+    }
+
+    @GetMapping("/utilisateurs/new")
+    public String addUtilisateur(Model model) {
+        Utilisateur utilisateur = new Utilisateur();
+        model.addAttribute("utilisateur", utilisateur);
+        model.addAttribute("pageTitle", "Créer un utilisateur.");
+
+        return "utilisateur_form";
+    }
+
+    @PostMapping("/utilisateurs/save")
+    public String saveUtilisateur(Utilisateur utilisateur, RedirectAttributes redirectAttributes) {
+        try {
+            utilisateurRepository.save(utilisateur);
+
+            redirectAttributes.addFlashAttribute("message", "L'utilisateur a été enregistré avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/utilisateurs";
+    }
+
+    @GetMapping("/utilisateurs/{id}")
+    public String editUtilisateur(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Utilisateur utilisateur = utilisateurRepository.findById(id).get();
+            List<Utilisateur> utilisateurs = utilisateurRepository.findAll();
+
+            model.addAttribute("utilisateur", utilisateur);
+            model.addAttribute("pageTitle", "Modifier l'utilisateur (ID: " + id + ")");
+
+            return "utilisateur_form";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+
+            return "redirect:/utilisateurs";
+        }
+    }
+
+    @GetMapping("/utilisateurs/delete/{id}")
+    public String deleteUtilisateur(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            utilisateurRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("message", "L'utilisateur avec l'id=" + id + " a été supprimé avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/utilisateurs";
+    }
+
+    //Historiques frigos
+    @Autowired
+    private HistoFrigoRepository histoFrigoRepository;
+    @GetMapping("/histofrigos")
+    public String getAllHistoriquesFrigos(Model model, @Param("keyword") String keyword) {
+        try {
+            List<HistoFrigo> histoFrigos = new ArrayList<HistoFrigo>();
+
+            //if (keyword == null) {
+                histoFrigoRepository.findAll().forEach(histoFrigos::add);
+            //} else {
+              //  histoFrigoRepository.findByNomIgnoreCase(keyword).forEach(histoFrigos::add);
+              //  model.addAttribute("keyword", keyword);
+            //}
+
+            model.addAttribute("histofrigos", histoFrigos);
+        } catch (Exception e) {
+            model.addAttribute("message", e.getMessage());
+        }
+
+        return "histofrigos";
+    }
+
+    @GetMapping("/histofrigos/new")
+    public String addHistoFrigo(Model model) {
+        HistoFrigo histoFrigo = new HistoFrigo();
+        model.addAttribute("histofrigo", histoFrigo);
+        model.addAttribute("pageTitle", "Créer un historique frigo.");
+
+        return "histofrigo_form";
+    }
+
+    @PostMapping("/histofrigos/save")
+    public String saveHistoFrigo(HistoFrigo histoFrigo, RedirectAttributes redirectAttributes) {
+        try {
+            histoFrigoRepository.save(histoFrigo);
+
+            redirectAttributes.addFlashAttribute("message", "L'historique de frigo a été enregistré avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/histoFrigos";
+    }
+
+    @GetMapping("/histofrigos/{id}")
+    public String editHistoFrigo(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            HistoFrigo histoFrigo = histoFrigoRepository.findById(id).get();
+            List<HistoFrigo> histoFrigos = histoFrigoRepository.findAll();
+
+            model.addAttribute("histofrigo", histoFrigo);
+            model.addAttribute("pageTitle", "Modifier l'historique Frigo (ID: " + id + ")");
+
+            return "histofrigo_form";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+
+            return "redirect:/histofrigos";
+        }
+    }
+
+    @GetMapping("/histofrigos/delete/{id}")
+    public String deleteHistoFrigo(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            histoFrigoRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("message", "L'historique Frigo avec l'id=" + id + " a été supprimé avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/histofrigos";
     }
 
 }
