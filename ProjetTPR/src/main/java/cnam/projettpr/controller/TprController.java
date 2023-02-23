@@ -1,8 +1,7 @@
 package cnam.projettpr.controller;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 import cnam.projettpr.dto.HistoFrigoDto;
 import cnam.projettpr.entity.*;
@@ -56,14 +55,23 @@ public class TprController {
     @PostMapping("/frigos/save")
     public String saveFrigo(Frigo frigo, RedirectAttributes redirectAttributes) {
         try {
+            Boolean isInsert = frigo.getId() == null;
+
+            //Mise à jour des temp. min. et max du frigo en fonction de l'historique des températures.
+            frigo.updateTemperatureMinMax(EntityHelper.getHistoriqueDuJour(frigo,new Date()));
+
             frigoRepository.save(frigo);
 
+
+            /*
             HistoFrigo histoFrigo = new HistoFrigo();
             histoFrigo.setDateHisto(new Date());
-            histoFrigo.setAction(0);
+            histoFrigo.setAction(isInsert ? 0:1);
             histoFrigo.setFrigo(frigo);
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin("ADMIN");
+            histoFrigo.setUtilisateur(utilisateur);
             histoFrigoRepository.save(histoFrigo);
-
+            */
             redirectAttributes.addFlashAttribute("message", "Le frigo a été enregistré avec succès !");
         } catch (Exception e) {
             redirectAttributes.addAttribute("message", e.getMessage());
@@ -100,17 +108,23 @@ public class TprController {
         return "redirect:/frigos";
     }
 
+    //Saisie des températures des frigos.
     @GetMapping("/tempfrigos/{id}")
     public String editTempFrigo(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
         try {
             Frigo frigo = frigoRepository.findById(id).get();
-            //Création d'un nouvel historique...
-            HistoFrigo histoFrigo = new HistoFrigo();
-            histoFrigo.setDateHisto(new Date());
-            histoFrigo.setFrigo(frigo);
-            histoFrigo.setAction(1);
-            frigo.getHistosFrigo().add(histoFrigo);
 
+            HistoFrigo histoFrigo = EntityHelper.getHistoriqueDuJour(frigo,new Date());
+            if (histoFrigo == null) {
+                //Création d'un nouvel historique...
+                histoFrigo = new HistoFrigo();
+                histoFrigo.setDateHisto(new Date());
+                histoFrigo.setFrigo(frigo);
+                histoFrigo.setAction(0);
+                frigo.getHistosFrigo().add(histoFrigo);
+            } else {
+                histoFrigo.setAction(1);
+            }
             HistoFrigoDto histoFrigoDto = new HistoFrigoDto(histoFrigo);
 
             model.addAttribute("histofrigodto", histoFrigoDto);
@@ -127,14 +141,23 @@ public class TprController {
     @PostMapping("/temphistofrigos/save")
     public String saveTempHistoFrigo(HistoFrigoDto histofrigoDto, RedirectAttributes redirectAttributes) {
         try {
-            HistoFrigo histoFrigo = new HistoFrigo();
+            Frigo frigo = frigoRepository.findById(histofrigoDto.getIdFrigo()).get();
+            HistoFrigo histoFrigo = EntityHelper.getHistoriqueDuJour(frigo,new Date());
+            if (histoFrigo == null) {
+                histoFrigo = new HistoFrigo();
+                histoFrigo.setFrigo(frigoRepository.findById(histofrigoDto.getIdFrigo()).get());
+                histoFrigo.setAction(0);
+                histoFrigo.setUtilisateur(utilisateurRepository.getUserByLogin("ADMIN"));
+            }
             histoFrigo.setActionStr(histofrigoDto.getActionStr());
-            histoFrigo.setDateHisto(new Date());
-            histoFrigo.setFrigo(frigoRepository.findById(histofrigoDto.getIdFrigo()).get());
-            histoFrigo.setAction(1);
+            histoFrigo.setDateHisto(histofrigoDto.getDateHisto());
             histoFrigo.setTempMatin(histofrigoDto.getTempMatin());
             histoFrigo.setTempMidi(histofrigoDto.getTempMidi());
             histoFrigoRepository.save(histoFrigo);
+
+            //Maj des valeurs max et min de température.
+            frigo.updateTemperatureMinMax(histoFrigo);
+            frigoRepository.save(frigo);
 
             redirectAttributes.addFlashAttribute("message", "La température du frigo a été enregistrée avec succès !");
         } catch (Exception e) {
@@ -234,6 +257,11 @@ public class TprController {
                 model.addAttribute("keyword", keyword);
             }
 
+            //Tri selon les noms
+            Collections.sort(produitsRef,(pr1,pr2) -> {
+                return pr1.getNomProduitRef().compareTo(pr2.getNomProduitRef());
+            });
+
             model.addAttribute("produitsref", produitsRef);
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
@@ -308,7 +336,19 @@ public class TprController {
             produitRefRepository.findAll().forEach(produitsRef::add);
 
             List<ProduitStock> produitsStock = new ArrayList<ProduitStock>();
-            produitStockRepository.findAll().forEach(produitsStock::add);
+
+            //Chargement "à la main" de la liste : on ne prend pas le statut CONSOMME
+            for (ProduitStock ps:produitStockRepository.findAll()){
+                if (ps.getStatus() != 1){
+                    produitsStock.add(ps);
+                }
+            }
+
+            //Tri selon les dates d'ouverture décroissantes
+            Collections.sort(produitsStock,(ps1,ps2) -> {
+                return ps2.getDateOuverture().compareTo(ps1.getDateOuverture());
+            });
+
 
             model.addAttribute("produitsstock", produitsStock);
             model.addAttribute("produitsref", produitsRef);
@@ -334,7 +374,12 @@ public class TprController {
     @PostMapping("/produitsstock/save")
     public String saveProduitStock(ProduitStock produitStock, RedirectAttributes redirectAttributes) {
         try {
+            Boolean isInsert = produitStock.getId() == null;
             produitStockRepository.save(produitStock);
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin("ADMIN");
+            HistoProduitStock histoProduitStock = new HistoProduitStock(produitStock,isInsert ? 0:1,utilisateur);
+            histoProduitStockRepository.save(histoProduitStock);
 
             redirectAttributes.addFlashAttribute("message", "Le produit stock a été enregistré avec succès !");
         } catch (Exception e) {
@@ -456,12 +501,22 @@ public class TprController {
         try {
             List<HistoFrigo> histoFrigos = new ArrayList<HistoFrigo>();
 
-            //if (keyword == null) {
+            if (keyword == null){
                 histoFrigoRepository.findAll().forEach(histoFrigos::add);
-            //} else {
-              //  histoFrigoRepository.findByNomIgnoreCase(keyword).forEach(histoFrigos::add);
-              //  model.addAttribute("keyword", keyword);
-            //}
+            } else {
+                //Chargement "à la main" de la liste : nomFrigo est @Transient dans l'historique
+                //et n'est pas supporté par les méthode de filtre du repository.
+                for (HistoFrigo hf:histoFrigoRepository.findAll()){
+                    if (hf.getNomFrigo().toUpperCase().compareTo(keyword.toUpperCase()) == 0){
+                        histoFrigos.add(hf);
+                    }
+                }
+            }
+
+            //Tri selon les dates d'historiques décroissantes
+            Collections.sort(histoFrigos,(hf1,hf2) -> {
+                return hf2.getDateHisto().compareTo(hf1.getDateHisto());
+            });
 
             model.addAttribute("histofrigos", histoFrigos);
         } catch (Exception e) {
@@ -483,6 +538,8 @@ public class TprController {
     @PostMapping("/histofrigos/save")
     public String saveHistoFrigo(HistoFrigo histoFrigo, RedirectAttributes redirectAttributes) {
         try {
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin("ADMIN");
+            histoFrigo.setUtilisateur(utilisateur);
             histoFrigoRepository.save(histoFrigo);
 
             redirectAttributes.addFlashAttribute("message", "L'historique de frigo a été enregistré avec succès !");
@@ -521,5 +578,79 @@ public class TprController {
 
         return "redirect:/histofrigos";
     }
+
+    //Historiques des produits stock.
+    @Autowired
+    private HistoProduitStockRepository histoProduitStockRepository;
+    @GetMapping("/histoproduitStock")
+    public String getAllHistoriquesProduitStock(Model model, @Param("keyword") String keyword) {
+        try {
+            List<HistoProduitStock> histoProduitsStock = new ArrayList<HistoProduitStock>();
+
+            //if (keyword == null) {
+            histoProduitStockRepository.findAll().forEach(histoProduitsStock::add);
+            //} else {
+            //  histoFrigoRepository.findByNomIgnoreCase(keyword).forEach(histoFrigos::add);
+            //  model.addAttribute("keyword", keyword);
+            //}
+
+            model.addAttribute("histoproduitsstock", histoProduitsStock);
+        } catch (Exception e) {
+            model.addAttribute("message", e.getMessage());
+        }
+
+        return "histoproduitsstock";
+    }
+
+    @GetMapping("/histoproduitStock/new")
+    public String addHistoProduitStock(Model model) {
+        HistoProduitStock histoProduitStock = new HistoProduitStock();
+        model.addAttribute("histoproduitstock", histoProduitStock);
+        model.addAttribute("pageTitle", "Créer un historique produit stock.");
+
+        return "histoproduitstock_form";
+    }
+
+    @PostMapping("/histoproduitStock/save")
+    public String saveHistoProduitStock(HistoProduitStock histoProduitStock, RedirectAttributes redirectAttributes) {
+        try {
+            histoProduitStockRepository.save(histoProduitStock);
+
+            redirectAttributes.addFlashAttribute("message", "L'historique de produit stock a été enregistré avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/histoproduitsstock";
+    }
+
+    @GetMapping("/histoproduitStock/{id}")
+    public String editHistoProduitStock(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            HistoProduitStock histoProduitStock = histoProduitStockRepository.findById(id).get();
+
+            model.addAttribute("histoproduitstock", histoProduitStock);
+            model.addAttribute("pageTitle", "Modifier l'historique Frigo (ID: " + id + ")");
+
+            return "histofrigo_form";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+
+            return "redirect:/histofrigos";
+        }
+    }
+
+    @GetMapping("/histoproduitStock/delete/{id}")
+    public String deleteProduitStockFrigo(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            histoProduitStockRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("message", "L'historique Produit stock avec l'id=" + id + " a été supprimé avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+        }
+
+        return "redirect:/histofrigos";
+    }
+
 
 }

@@ -5,9 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.Period;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Entity
@@ -59,31 +60,40 @@ public class ProduitStock {
         return this.status;
     }
 
+    @OneToMany(mappedBy = "produitStock",cascade = CascadeType.ALL)
+    private Set<HistoProduitStock> histosProduitStock;
+
     @Transient
     public String getTempsRestant(){
         String result = "";
 
-        Date dateNow = new Date(System.currentTimeMillis());
-        long elapsedms = dateNow.getTime() - dateOuverture.getTime();
-        long diff = TimeUnit.HOURS.convert(elapsedms, TimeUnit.MILLISECONDS);
+        //Calcul de la date d'expiration
+        LocalDateTime dateExpiration = dateOuverture.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        dateExpiration = dateExpiration.plusDays(this.produitRef.getDureeConservation());
 
-        if (diff > 0){
-            long nbJours = diff / 24;
-            if (nbJours > 0){
-                result = String.format("%d jour(s) ",nbJours);
-            }
+        LocalDateTime dateNow = LocalDateTime.now();
 
-            if (nbJours > this.produitRef.getDureeConservation()){
-                result = "Produit expiré";
-            } else {
-                long nbHeures = diff - (nbJours * 24);
-                if (nbHeures > 0){
-                    result += String.format("%d heure(s)",nbHeures);
-                }
-            }
+        long nbJours = dateNow.until(dateExpiration, ChronoUnit.DAYS);
+        long nbMois = dateNow.until(dateExpiration, ChronoUnit.MONTHS);
+
+        Period period = getPeriod(dateNow, dateExpiration);
+        long time[] = getTime(dateNow, dateExpiration);
+
+        if (period.getYears() > 0)
+        {
+            result += String.format("%d année(s) ",period.getYears());
         }
-        else {
-            result = "Moins d'une heure";
+        if (period.getMonths() > 0)
+        {
+            result += String.format("%d mois(s) ",period.getMonths());
+        }
+        if (period.getDays() > 0)
+        {
+            result += String.format("%d jour(s) ",period.getDays());
+        }
+
+        if (result == ""){
+            result = "Produit expiré";
         }
 
         return result;
@@ -142,6 +152,33 @@ public class ProduitStock {
     after an entity is updated – @PostUpdate
     after an entity has been loaded – @PostLoad
      */
+
+
+    //Private
+    private Period getPeriod(LocalDateTime fromDate, LocalDateTime toDate) {
+        return Period.between(fromDate.toLocalDate(), toDate.toLocalDate());
+    }
+
+    private long[] getTime(LocalDateTime fromDate, LocalDateTime toDate) {
+        LocalDateTime today = LocalDateTime.of(
+                toDate.getYear(),
+                toDate.getMonthValue(),
+                toDate.getDayOfMonth(),
+                fromDate.getHour(),
+                fromDate.getMinute(),
+                fromDate.getSecond());
+
+        Duration duration = Duration.between(today, toDate);
+
+        long seconds = duration.getSeconds();
+
+        long hours = seconds / 3600;
+        long minutes = ((seconds % 3600) / 60);
+        long secs = (seconds % 60);
+
+        return new long[]{hours, minutes, secs};
+    }
+
 
     public ProduitStock(){
     }

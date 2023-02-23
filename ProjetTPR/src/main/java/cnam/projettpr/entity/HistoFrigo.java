@@ -31,6 +31,9 @@ public class HistoFrigo {
 
     private Float tempMidi;
 
+    @ManyToOne
+    private Utilisateur utilisateur;
+
     @Transient
     private String actionStr;
 
@@ -64,6 +67,23 @@ public class HistoFrigo {
         this.tempMidi = tempMidi;
     }
 
+    public Utilisateur getUtilisateur(){
+        return this.utilisateur;
+    }
+
+    public void setUtilisateur(Utilisateur utilisateur){
+        this.utilisateur = utilisateur;
+    }
+
+    @Transient
+    private String nomUtilisateur;
+    @Transient
+    public String getNomUtilisateur(){
+        if (utilisateur != null){
+            return utilisateur.getNom();
+        }
+        return "";
+    }
 
     @Transient
     public String getActionStr(){
@@ -83,11 +103,11 @@ public class HistoFrigo {
     }
 
     @Transient
-    public void setActionStr(String statusStr){
-        this.actionStr = statusStr;
-        if (statusStr.equals("INSERTION")){
+    public void setActionStr(String actionStr){
+        this.actionStr = actionStr;
+        if (actionStr.equals("INSERTION")){
             setAction(0);
-        } else if (statusStr.equals("MODIFICATION")){
+        } else if (actionStr.equals("MODIFICATION")){
             setAction(1);
         }
     }

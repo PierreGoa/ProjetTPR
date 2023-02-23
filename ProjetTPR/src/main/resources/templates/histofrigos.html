@@ -20,7 +20,7 @@
 <div th:replace="fragments/header :: header"></div>
 
 <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-  <h2 class="text-center">Historiques Frigos</h2>
+  <h2 class="text-center">Historiques des températures de frigos</h2>
 
   <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center message"
        role="alert">
@@ -58,6 +58,9 @@
         <th scope="col">Nom</th>
         <th scope="col">Temp matin</th>
         <th scope="col">Temp midi</th>
+        <th scope="col">Utilisateur</th>
+        <th scope="col">Action</th>
+        <th scope="col"></th>
         <th></th>
       </tr>
       </thead>
@@ -68,6 +71,8 @@
         <td>[[${histofrigo.nomFrigo}]]</td>
         <td>[[${histofrigo.tempMatin}]]</td>
         <td>[[${histofrigo.tempMidi}]]</td>
+        <td>[[${histofrigo.nomUtilisateur}]]</td>
+        <td>[[${histofrigo.actionStr}]]</td>
         <td>
           <a th:href="@{'/histofrigos/delete/' + ${histofrigo.idHistoFrigo}}" th:frigoNom="${histofrigo.nomFrigo}" id="btnDelete"
              title="Supprimer ce frigo" class="fa-regular fa-trash-can icon-dark btn-delete"></a>

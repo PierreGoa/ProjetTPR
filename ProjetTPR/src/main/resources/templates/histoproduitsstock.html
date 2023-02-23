@@ -20,7 +20,7 @@
 <div th:replace="fragments/header :: header"></div>
 
 <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-  <h2 class="text-center">Frigos</h2>
+  <h2 class="text-center">Historiques Produits Stock</h2>
 
   <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center message"
        role="alert">
@@ -31,7 +31,7 @@
   </div>
   <!--  Formulaire de recherche -->
   <div class="my-3">
-    <form th:action="@{/frigos}">
+    <form th:action="@{/histoproduitsstock}">
       <div class="row d-flex">
         <div class="col-md-6 mt-2">
           <div class="search">
@@ -44,50 +44,43 @@
         <div class="col-md-6 mt-2">
           <button id="btnClear" class="btn btn-info">Vider</button>
         </div>
-        <div class="col-md-6 mt-2">
-          <a href="/frigos/new" class="btn btn-primary active" role="button" data-bs-toggle="button" aria-pressed="true">Ajouter un frigo</a>
-        </div>
       </div>
     </form>
   </div>
 
   <!-- variale inseree dans Modele depuis le controler -->
-  <div th:if="${frigos.size() > 0}">
+  <div th:if="${histoproduitsstock.size() > 0}">
     <table class="table table-hover table-responsive-xl">
       <thead class="thead-light">
       <tr>
         <th scope="col">Id</th>
-        <th scope="col">Nom</th>
-        <th scope="col">Temp matin</th>
-        <th scope="col">Temp midi</th>
-        <th scope="col">Temp min</th>
-        <th scope="col">Temp max</th>
-        <th>Modif./Suppr.</th>
+        <th scope="col">Nom du produit</th>
+        <th scope="col">Statut</th>
+        <th scope="col">Utilisateur</th>
+        <th scope="col">Date historique</th>
+        <th scope="col">Action</th>
+        <th></th>
       </tr>
       </thead>
       <tbody>
-      <tr th:each="frigo : ${frigos}">
-        <th scope="row">[[${frigo.id}]]</th>
-        <td>[[${frigo.nomFrigo}]]</td>
-        <td>[[${frigo.tempMatin}]]</td>
-        <td>[[${frigo.tempMidi}]]</td>
-        <td>[[${frigo.tempMin}]]</td>
-        <td>[[${frigo.tempMax}]]</td>
+      <tr th:each="histoproduitstock : ${histoproduitsstock}">
+        <th scope="row">[[${histoproduitstock.idHistoProduitStock}]]</th>
+        <td>[[${histoproduitstock.nomProduitStock}]]</td>
+        <td>[[${histoproduitstock.statutStr}]]</td>
+        <td>[[${histoproduitstock.nomUtilisateur}]]</td>
+        <td>[[${#dates.format(histoproduitstock.dateHisto, 'dd-MM-yyyy HH:mm')}]]</td>
+        <td>[[${histoproduitstock.actionStr}]]</td>
         <td>
-          <a th:href="@{'/frigos/' + ${frigo.id}}" title="Modifier ce frigo"
-             class="fa-regular fa-pen-to-square icon-dark"></a>
-          <a th:href="@{'/tempfrigos/' + ${frigo.id}}" title="Noter la température"
-              class="fa-solid fa-sliders"></a>
-          <a th:href="@{'/frigos/delete/' + ${frigo.id}}" th:frigoNom="${frigo.nomFrigo}" id="btnDelete"
-             title="Supprimer ce frigo" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
+          <a th:href="@{'/histoproduitstock/delete/' + ${histoproduitstock.idHistoProduitStock}}" th:produitStockNom="${histoproduitstock.nomProduitStock}" id="btnDelete"
+             title="Supprimer cet historique de produit stock" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="" th:unless="${frigos.size() > 0}">
-    <span>Aucun frigo trouvé !</span>
+  <div class="" th:unless="${histoproduitsstock.size() > 0}">
+    <span>Aucun historique de produit stock trouvé !</span>
   </div>
 </div>
 
@@ -121,16 +114,16 @@
       e.preventDefault();
       link = $(this);
 
-      frigoNom = link.attr("frigoNom");
+      produitStockNom = link.attr("produitStockNom");
       $("#yesBtn").attr("href", link.attr("href"));
-      $("#confirmText").html("Voulez-vous supprimer le frigo \<strong\>" + frigoNom + "\<\/strong\>?");
+      $("#confirmText").html("Voulez-vous supprimer l'historique de produit stock \<strong\>" + produitStockNom + "\<\/strong\>?");
       $("#confirmModal").modal();
     });
 
     $("#btnClear").on("click", function (e) {
       e.preventDefault();
       $("#keyword").text("");
-      window.location = "[[@{/frigos}]]";
+      window.location = "[[@{/histoproduitsstock}]]";
     });
   });
 </script>
