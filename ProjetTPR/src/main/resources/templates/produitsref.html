@@ -59,6 +59,7 @@
         <th scope="col">Id</th>
         <th scope="col">Nom</th>
         <th scope="col">Catégorie</th>
+        <th scope="col">Durée conserv. (Jours)</th>
         <th>Modif./Suppr.</th>
       </tr>
       </thead>
@@ -67,6 +68,7 @@
         <th scope="row">[[${produitref.id}]]</th>
         <td>[[${produitref.nomProduitRef}]]</td>
         <td>[[${produitref.categorie.nomCategorie}]]</td>
+        <td style="text-align: center">[[${produitref.dureeConservation}]]</td>
         <td>
           <a th:href="@{'/produitsref/' + ${produitref.id}}" title="Modifier ce produit de référence"
              class="fa-regular fa-pen-to-square icon-dark"></a>
