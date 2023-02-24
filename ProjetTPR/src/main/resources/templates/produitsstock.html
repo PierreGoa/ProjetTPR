@@ -49,6 +49,7 @@
         <th scope="col">Id</th>
         <th scope="col">Nom</th>
         <th scope="col">Date ouverture</th>
+        <th scope="col">Date expiration</th>
         <th scope="col">Temps restant</th>
         <th scope="col">Statut</th>
         <th>Modif./Suppr.</th>
@@ -58,7 +59,8 @@
       <tr th:each="produitstock : ${produitsstock}">
         <th scope="row">[[${produitstock.id}]]</th>
         <td>[[${produitstock.produitRef.nomProduitRef}]]</td>
-        <td>[[${#dates.format(produitstock.dateOuverture, 'dd-MM-yyyy HH:mm')}]]</td>
+        <td>[[${#dates.format(produitstock.dateOuverture, 'dd-MM-yyyy')}]]</td>
+        <td>[[${#dates.format(produitstock.dateExpiration, 'dd-MM-yyyy')}]]</td>
         <td>[[${produitstock.tempsRestant}]]</td>
         <td>[[${produitstock.statusStr}]]</td>
         <td>

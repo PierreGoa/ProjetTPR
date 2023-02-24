@@ -63,6 +63,23 @@ public class ProduitStock {
     @OneToMany(mappedBy = "produitStock",cascade = CascadeType.ALL)
     private Set<HistoProduitStock> histosProduitStock;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern="dd-MM-yyyy HH:mm")
+    @Transient Date dateExpiration;
+
+    @Transient
+    public Date getDateExpiration(){
+        LocalDateTime dateExp = dateOuverture.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusDays(this.produitRef.getDureeConservation());
+
+        ZonedDateTime zonedDateTime = dateExp.atZone(ZoneId.systemDefault());
+        return Date.from(zonedDateTime.toInstant());
+    }
+
+    @Transient
+    public void setDateExpiration(Date dateExp){
+
+    }
+
     @Transient
     public String getTempsRestant(){
         String result = "";
@@ -131,7 +148,7 @@ public class ProduitStock {
             setStatus(0);
         } else if (statusStr.equals("CONSOMME")){
             setStatus(1);
-        } else if (statusStr.equals("ERREURSAISIE")){
+        } else if (statusStr.equals("ERREUR SAISIE")){
             setStatus(2);
         }
     }

@@ -59,7 +59,6 @@
         <th scope="col">Login</th>
         <th scope="col">Prenom</th>
         <th scope="col">Nom</th>
-        <th scope="col">Password</th>
         <th scope="col">Role</th>
         <th>Modif./Suppr.</th>
       </tr>
@@ -69,7 +68,6 @@
         <th scope="row">[[${utilisateur.login}]]</th>
         <td>[[${utilisateur.prenom}]]</td>
         <td>[[${utilisateur.nom}]]</td>
-        <td>[[${utilisateur.password}]]</td>
         <td>[[${utilisateur.roleStr}]]</td>
         <td>
           <a th:href="@{'/utilisateurs/' + ${utilisateur.id}}" title="Modifier cet utilisateur"

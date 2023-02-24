@@ -8,13 +8,13 @@
         </button>
         <div class="collapse navbar-collapse" id="topNavbar">
             <ul class="navbar-nav">
-                <li class="nav-item">
+                <li class="nav-item" th:if="${userrole}">
                     <a class="nav-link" th:href="@{/frigos}">Frigos</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" th:if="${userrole}">
                     <a class="nav-link" th:href="@{/produitsref}">Produits</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" th:if="${userrole}">
                     <a class="nav-link" th:href="@{/categories}">Catégories</a>
                 </li>
                 <li class="nav-item">
@@ -23,9 +23,13 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/histoproduitStock}">Historiques Produits Stock</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" th:if="${userrole}">
                     <a class="nav-link" th:href="@{/utilisateurs}">Utilisateurs</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/logout}">LogOut</a>
+                </li>
+
             </ul>
         </div>
     </nav>

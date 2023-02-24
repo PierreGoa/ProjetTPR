@@ -112,7 +112,7 @@ public class HistoProduitStock {
     @Transient
     public String getNomUtilisateur(){
         if (utilisateur != null){
-            return utilisateur.getNom();
+            return utilisateur.getLogin();
         }
         return "";
     }
