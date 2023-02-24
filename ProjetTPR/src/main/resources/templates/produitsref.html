@@ -72,8 +72,8 @@
         <td>
           <a th:href="@{'/produitsref/' + ${produitref.id}}" title="Modifier ce produit de référence"
              class="fa-regular fa-pen-to-square icon-dark"></a>
-          &nbsp;
-          <a th:href="@{'/produitsref/delete/' + ${produitref.id}}" th:produitrefNom="${produitref.nomProduitRef}" id="btnDelete"
+
+          <a th:href="@{'/produitsref/delete/' + ${produitref.id}}" th:nomProduitRef="${produitref.nomProduitRef}" id="btnDelete"
              title="Supprimer ce produit de référence" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
         </td>
       </tr>
@@ -116,9 +116,9 @@
       e.preventDefault();
       link = $(this);
 
-      frigoNom = link.attr("produitrefNom");
+      pdtRefNom = link.attr("nomProduitRef");
       $("#yesBtn").attr("href", link.attr("href"));
-      $("#confirmText").html("Voulez-vous supprimer le produit de référence \<strong\>" + produitrefNom + "\<\/strong\>?");
+      $("#confirmText").html("Voulez-vous supprimer le produit de référence \<strong\>" + pdtRefNom + "\<\/strong\>?");
       $("#confirmModal").modal();
     });
 

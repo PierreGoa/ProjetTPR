@@ -8,6 +8,8 @@ import cnam.projettpr.entity.*;
 import cnam.projettpr.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@CrossOrigin
 public class TprController {
 
     //Frigos
@@ -33,6 +36,10 @@ public class TprController {
                 model.addAttribute("keyword", keyword);
             }
 
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
+
             model.addAttribute("frigos", frigos);
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
@@ -48,6 +55,10 @@ public class TprController {
         model.addAttribute("frigo", frigo);
         model.addAttribute("pageTitle", "Créer un frigo.");
 
+        Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
+
         return "frigo_form";
     }
 
@@ -62,16 +73,6 @@ public class TprController {
 
             frigoRepository.save(frigo);
 
-
-            /*
-            HistoFrigo histoFrigo = new HistoFrigo();
-            histoFrigo.setDateHisto(new Date());
-            histoFrigo.setAction(isInsert ? 0:1);
-            histoFrigo.setFrigo(frigo);
-            Utilisateur utilisateur = utilisateurRepository.getUserByLogin("ADMIN");
-            histoFrigo.setUtilisateur(utilisateur);
-            histoFrigoRepository.save(histoFrigo);
-            */
             redirectAttributes.addFlashAttribute("message", "Le frigo a été enregistré avec succès !");
         } catch (Exception e) {
             redirectAttributes.addAttribute("message", e.getMessage());
@@ -87,6 +88,9 @@ public class TprController {
 
             model.addAttribute("frigo", frigo);
             model.addAttribute("pageTitle", "Modifier le frigo (ID: " + id + ")");
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
             return "frigo_form";
         } catch (Exception e) {
@@ -130,6 +134,9 @@ public class TprController {
             model.addAttribute("histofrigodto", histoFrigoDto);
             model.addAttribute("pageTitle", "Mettre à jour la température du frigo (ID: " + histoFrigo.getIdHistoFrigo() + ")");
 
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
             return "tempfrigo_form";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
@@ -147,8 +154,8 @@ public class TprController {
                 histoFrigo = new HistoFrigo();
                 histoFrigo.setFrigo(frigoRepository.findById(histofrigoDto.getIdFrigo()).get());
                 histoFrigo.setAction(0);
-                histoFrigo.setUtilisateur(utilisateurRepository.getUserByLogin("ADMIN"));
             }
+            histoFrigo.setUtilisateur(utilisateurRepository.getUserByLogin(getCurrentUser()));
             histoFrigo.setActionStr(histofrigoDto.getActionStr());
             histoFrigo.setDateHisto(histofrigoDto.getDateHisto());
             histoFrigo.setTempMatin(histofrigoDto.getTempMatin());
@@ -182,6 +189,15 @@ public class TprController {
                 model.addAttribute("keyword", keyword);
             }
 
+            //Tri selon les noms
+            Collections.sort(categories,(cat1,cat2) -> {
+                return cat1.getNomCategorie().compareTo(cat2.getNomCategorie());
+            });
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
+
             model.addAttribute("categories", categories);
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
@@ -196,6 +212,10 @@ public class TprController {
 
         model.addAttribute("categorie", categorie);
         model.addAttribute("pageTitle", "Créer une catégorie.");
+
+        Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
 
         return "categorie_form";
     }
@@ -221,6 +241,9 @@ public class TprController {
 
             model.addAttribute("categorie", categorie);
             model.addAttribute("pageTitle", "Modifier la catégorie (ID: " + id + ")");
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
             return "categorie_form";
         } catch (Exception e) {
@@ -263,6 +286,10 @@ public class TprController {
             });
 
             model.addAttribute("produitsref", produitsRef);
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
         }
@@ -278,6 +305,9 @@ public class TprController {
         model.addAttribute("produitref", produitRef);
         model.addAttribute("categories", categoriesRef);
         model.addAttribute("pageTitle", "Créer un produit de référence.");
+
+        Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
         return "produitref_form";
     }
@@ -305,6 +335,9 @@ public class TprController {
             model.addAttribute("produitref", produitRef);
             model.addAttribute("categories", categoriesRef);
             model.addAttribute("pageTitle", "Modifier le produit de référence (ID: " + id + ")");
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
             return "produitref_form";
         } catch (Exception e) {
@@ -349,6 +382,8 @@ public class TprController {
                 return ps2.getDateOuverture().compareTo(ps1.getDateOuverture());
             });
 
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
             model.addAttribute("produitsstock", produitsStock);
             model.addAttribute("produitsref", produitsRef);
@@ -368,6 +403,9 @@ public class TprController {
         model.addAttribute("produitsref", produitsRef);
         model.addAttribute("pageTitle", "Créer un produit Stock.");
 
+        Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
         return "produitstock_form";
     }
 
@@ -377,7 +415,7 @@ public class TprController {
             Boolean isInsert = produitStock.getId() == null;
             produitStockRepository.save(produitStock);
 
-            Utilisateur utilisateur = utilisateurRepository.getUserByLogin("ADMIN");
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
             HistoProduitStock histoProduitStock = new HistoProduitStock(produitStock,isInsert ? 0:1,utilisateur);
             histoProduitStockRepository.save(histoProduitStock);
 
@@ -398,6 +436,9 @@ public class TprController {
             model.addAttribute("produitstock", produitStock);
             model.addAttribute("produitsref", produitsRef);
             model.addAttribute("pageTitle", "Modifier le produit stock (ID: " + id + ")");
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
             return "produitstock_form";
         } catch (Exception e) {
@@ -435,6 +476,10 @@ public class TprController {
             }
 
             model.addAttribute("utilisateurs", utilisateurs);
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
         }
@@ -447,6 +492,9 @@ public class TprController {
         Utilisateur utilisateur = new Utilisateur();
         model.addAttribute("utilisateur", utilisateur);
         model.addAttribute("pageTitle", "Créer un utilisateur.");
+
+        Utilisateur util = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", util.getRole() == 1 ? "ADMIN":null);
 
         return "utilisateur_form";
     }
@@ -472,6 +520,9 @@ public class TprController {
 
             model.addAttribute("utilisateur", utilisateur);
             model.addAttribute("pageTitle", "Modifier l'utilisateur (ID: " + id + ")");
+
+            Utilisateur util = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", util.getRole() == 1 ? "ADMIN":null);
 
             return "utilisateur_form";
         } catch (Exception e) {
@@ -519,6 +570,10 @@ public class TprController {
             });
 
             model.addAttribute("histofrigos", histoFrigos);
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
         }
@@ -532,13 +587,16 @@ public class TprController {
         model.addAttribute("histofrigo", histoFrigo);
         model.addAttribute("pageTitle", "Créer un historique frigo.");
 
+        Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
         return "histofrigo_form";
     }
 
     @PostMapping("/histofrigos/save")
     public String saveHistoFrigo(HistoFrigo histoFrigo, RedirectAttributes redirectAttributes) {
         try {
-            Utilisateur utilisateur = utilisateurRepository.getUserByLogin("ADMIN");
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
             histoFrigo.setUtilisateur(utilisateur);
             histoFrigoRepository.save(histoFrigo);
 
@@ -558,6 +616,9 @@ public class TprController {
 
             model.addAttribute("histofrigo", histoFrigo);
             model.addAttribute("pageTitle", "Modifier l'historique Frigo (ID: " + id + ")");
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
             return "histofrigo_form";
         } catch (Exception e) {
@@ -587,14 +648,13 @@ public class TprController {
         try {
             List<HistoProduitStock> histoProduitsStock = new ArrayList<HistoProduitStock>();
 
-            //if (keyword == null) {
             histoProduitStockRepository.findAll().forEach(histoProduitsStock::add);
-            //} else {
-            //  histoFrigoRepository.findByNomIgnoreCase(keyword).forEach(histoFrigos::add);
-            //  model.addAttribute("keyword", keyword);
-            //}
 
             model.addAttribute("histoproduitsstock", histoProduitsStock);
+
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
         }
@@ -607,6 +667,9 @@ public class TprController {
         HistoProduitStock histoProduitStock = new HistoProduitStock();
         model.addAttribute("histoproduitstock", histoProduitStock);
         model.addAttribute("pageTitle", "Créer un historique produit stock.");
+
+        Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+        model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
 
         return "histoproduitstock_form";
     }
@@ -632,6 +695,9 @@ public class TprController {
             model.addAttribute("histoproduitstock", histoProduitStock);
             model.addAttribute("pageTitle", "Modifier l'historique Frigo (ID: " + id + ")");
 
+            Utilisateur utilisateur = utilisateurRepository.getUserByLogin(getCurrentUser());
+            model.addAttribute("userrole", utilisateur.getRole() == 1 ? "ADMIN":null);
+
             return "histofrigo_form";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
@@ -652,5 +718,14 @@ public class TprController {
         return "redirect:/histofrigos";
     }
 
+    //Private
+    private String getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        } else {
+            return principal.toString();
+        }
+    }
 }

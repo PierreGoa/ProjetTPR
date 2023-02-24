@@ -80,7 +80,7 @@ public class HistoFrigo {
     @Transient
     public String getNomUtilisateur(){
         if (utilisateur != null){
-            return utilisateur.getNom();
+            return utilisateur.getLogin();
         }
         return "";
     }
